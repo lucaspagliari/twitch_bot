@@ -61,7 +61,14 @@ export class CommandsController {
     let args = this.parseMessage(key)
     const fun = this.getFunction(args.command)
 
-    fun(this.client, Object.assign(params, args))
+
+    try {
+      fun(this.client, Object.assign(params, args))
+    } catch (error) {
+      console.error(error);
+      console.log("------- error above --------");
+      
+    }
   }
 
   public addCommand(msg: string, fun: Function) {
