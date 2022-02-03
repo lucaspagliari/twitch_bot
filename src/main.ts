@@ -16,7 +16,7 @@ const opts = {
 }
 
 const client = new tmi.client(opts)
-const controller = commands(client);
+const controller = commands(client)
 
 client.on('message', (target, context, msg, self) => {
   if (self) return
@@ -29,4 +29,4 @@ client.on('connected', (address, port) => {
 
 client.connect()
 
-export default client;
+export default client

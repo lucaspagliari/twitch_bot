@@ -1,18 +1,18 @@
-import { Client } from "tmi.js";
-import { CommandsController } from "./controllers";
+import { Client } from "tmi.js"
+import { CommandsController } from "./controllers"
 
 import random from "./random"
-import message from "./message";
+import message from "./message"
 
 
 
 export default function commands(client: Client) {
-  const commands = new CommandsController(client);
+  const commands = new CommandsController(client)
 
-  commands.addManyCommands(random);
-  commands.addManyCommands(message);
+  commands.addManyCommands(random)
+  commands.addManyCommands(message)
 
-  return commands;
+  return commands
 }
 
 

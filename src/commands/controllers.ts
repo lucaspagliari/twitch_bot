@@ -65,8 +65,8 @@ export class CommandsController {
     try {
       fun(this.client, Object.assign(params, args))
     } catch (error) {
-      console.error(error);
-      console.log("------- error above --------");
+      console.error(error)
+      console.log("------- error above --------")
       
     }
   }

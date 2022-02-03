@@ -3,12 +3,12 @@ import { params } from "../controllers"
 
 
 function _dice(): number {
-  return Math.floor(Math.random() * 6 + 1);
+  return Math.floor(Math.random() * 6 + 1)
 }
 
 function dice(client: Client, params: params) {
-  const user = params.context.username || "";
-  client.say(params.target, `@${user} Your Rolled: ${_dice()}`);
+  const user = params.context.username || ""
+  client.say(params.target, `@${user} Your Rolled: ${_dice()}`)
 }
 
 function guessdice(client: Client, params: params) {
@@ -19,8 +19,8 @@ function guessdice(client: Client, params: params) {
   const result = _dice().toString()
 
   const msg = `@${params.context.username} guessed ${params.args[0]}. `
-  + `Dice rolled ${result}`
-  
+    + `Dice rolled ${result}`
+
   client.say(params.target, msg)
 }
 
@@ -32,10 +32,10 @@ function guessage(client: Client, params: params) {
   const age = Math.abs(new Date(diff).getUTCFullYear() - 1970)
 
   if (params.args[0] == age.toString()) {
-    client.say(params.target, `@${params.context.username} You got it right!!`);
+    client.say(params.target, `@${params.context.username} You got it right!!`)
     return
   }
-  client.say(params.target, `Hmmmm wrong answer @${params.context.username}, try again later...`);
+  client.say(params.target, `Hmmmm wrong answer @${params.context.username}, try again later...`)
 }
 
 
