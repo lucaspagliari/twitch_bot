@@ -1,32 +1,24 @@
-import tmi from "tmi.js"
+import client from "./app/bot"
 import commands from "./commands"
+import { config } from "dotenv";
 
+config()
 
-const BOT_USERNAME = "laap_bot"
-const CHANNEL_NAME = "lucaspagliari"
-const OAUTH_TOKEN = "oauth:pvqsxot908sv255jgfefn1s4ja855h"
-const opts = {
-  identity: {
-    username: BOT_USERNAME,
-    password: OAUTH_TOKEN
-  },
-  channels: [
-    CHANNEL_NAME
-  ]
-}
+const bot = client()
+const controller = commands(bot)
 
-const client = new tmi.client(opts)
-const controller = commands(client)
-
-client.on('message', (target, context, msg, self) => {
+bot.on('message', (target, context, msg, self) => {
   if (self) return
   controller.execute(msg.trim(), { target, context })
 })
 
-client.on('connected', (address, port) => {
+bot.on("whisper", (from, context, msg, self) => {
+  console.log(from, context.username);
+})
+
+
+bot.on('connected', (address, port) => {
   console.log("Twitch bot connected at:", address, port)
 })
 
-client.connect()
-
-export default client
+bot.connect()

@@ -30,7 +30,7 @@ function leavemessage(client: Client, params: params) {
   }
 
   const date = new Date().toISOString()
-  const content = `${date},${username}:${msg}\n`
+  const content = `[${date}] ${username}: ${msg}\n`
 
   const response = write(content)
   client.say(params.target, `@${username} ${response}`)

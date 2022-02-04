@@ -54,20 +54,18 @@ export class CommandsController {
   }
 
   public execute(key: string, params: any) {
-    if (!key.charAt(0) || key.length < 2) {
+    if (key.charAt(0) != "!" || key.length < 2) {
       return
     }
 
     let args = this.parseMessage(key)
     const fun = this.getFunction(args.command)
 
-
     try {
       fun(this.client, Object.assign(params, args))
     } catch (error) {
       console.error(error)
       console.log("------- error above --------")
-      
     }
   }
 
@@ -78,7 +76,7 @@ export class CommandsController {
     }
   }
 
-  public addManyCommands(commands: any) {
+  public addCommandsList(commands: any) {
     Object.keys(commands).map(msg => {
       this.addCommand(msg, commands[msg])
     })

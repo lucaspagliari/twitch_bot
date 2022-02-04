@@ -9,8 +9,8 @@ import message from "./message"
 export default function commands(client: Client) {
   const commands = new CommandsController(client)
 
-  commands.addManyCommands(random)
-  commands.addManyCommands(message)
+  commands.addCommandsList(random)
+  commands.addCommandsList(message)
 
   return commands
 }
