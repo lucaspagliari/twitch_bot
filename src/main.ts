@@ -1,24 +1,32 @@
-import client from "./app/bot"
+import { chatClient, refreshingAuthProvider, getAccessToken } from "./app/chat"
 import commands from "./commands"
 import { config } from "dotenv";
 
 config()
 
-const bot = client()
-const controller = commands(bot)
+// async function start() {
+//   // await getAccessToken();
 
-bot.on('message', (target, context, msg, self) => {
-  if (self) return
-  controller.execute(msg.trim(), { target, context })
+const auth = refreshingAuthProvider();
+const chat = chatClient(auth, ['lucaspagliari']);
+const commandsController = commands(chat)
+
+
+chat.onMessage((channel, user, message, twitch) => {
+  console.log(channel, user, message);
+  message = message.trim()
+  if (message) {
+    return
+  }
+  if (message.charAt(0) == "!") {
+    commandsController.exec(message, { message, channel, user, twitch });
+  }
 })
 
-bot.on("whisper", (from, context, msg, self) => {
-  console.log(from, context.username);
+chat.onConnect(() => {
+  console.log("chat client connected")
 })
 
-
-bot.on('connected', (address, port) => {
-  console.log("Twitch bot connected at:", address, port)
-})
-
-bot.connect()
+chat.connect();
+// }
+// start()

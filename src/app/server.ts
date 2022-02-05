@@ -1,107 +1,52 @@
-import crypto from "crypto"
 import express from "express"
+import { config } from "dotenv"
+import { writeFile } from "fs";
+import { join } from "path";
+config()
+
+const port = 3000
+/* To get code from twitch api example:
+  https://id.twitch.tv/oauth2/authorize?client_id=CLIENT_ID
+    &redirect_uri=REDIRECT_URI
+    &response_type=code
+    &scope=chat:read+chat:edit
+*/
+const twitchAPI = process.env.TWITCH_OAUTH_API || ""
+const clientId = process.env.TWITCH_CLIENT_ID || ""
+const redirectUri = `http://localhost:${port}/code`
+const respondeType = "code"
+const scope = "chat:read+chat:edit"
+
+const codeFilePath = join(__dirname, "code.txt")
 
 
-const app = express();
-const port = 8080;
-
-// Notification request headers
-const TWITCH_MESSAGE_ID = 'Twitch-Eventsub-Message-Id'.toLowerCase();
-const TWITCH_MESSAGE_TIMESTAMP = 'Twitch-Eventsub-Message-Timestamp'.toLowerCase();
-const TWITCH_MESSAGE_SIGNATURE = 'Twitch-Eventsub-Message-Signature'.toLowerCase();
-const MESSAGE_TYPE = 'Twitch-Eventsub-Message-Type'.toLowerCase();
-
-// Notification message types
-const MESSAGE_TYPE_VERIFICATION = 'webhook_callback_verification';
-const MESSAGE_TYPE_NOTIFICATION = 'notification';
-const MESSAGE_TYPE_REVOCATION = 'revocation';
-
-// Prepend this string to the HMAC that's created from the message
-const HMAC_PREFIX = 'sha256=';
-
-app.use(express.raw({          // Need raw message body for signature verification
-  type: 'application/json'
-}))
-
-app.post('/eventsub', (req, res) => {
-  let secret = getSecret();
-  let message = getHmacMessage(req);
-  let hmac = HMAC_PREFIX + getHmac(secret, message);  // Signature to compare
-
-  console.log(hmac, req.headers[TWITCH_MESSAGE_SIGNATURE])
+const link = `${twitchAPI}/authorize`
+  + `?client_id=${clientId}`
+  + `&redirect_uri=${redirectUri}`
+  + `&response_type=${respondeType}`
+  + `&scope=${scope}`
 
 
-  if (true === verifyMessage(hmac, req.headers[TWITCH_MESSAGE_SIGNATURE])) {
-    res.sendStatus(200)
-    return
+const app = express()
+
+app.get("/", (req, res) => {
+  if (Object.keys(req.params).length) {
+    res.send("hello\n" + JSON.stringify(req.params))
+  } else {
+    res.redirect(link)
   }
-  res.sendStatus(403);
+})
 
-  //   console.log("signatures match");
-
-  //   // Get JSON object from body, so you can process the message.
-  //   let notification = JSON.parse(req.body);
-
-  //   if (MESSAGE_TYPE_NOTIFICATION === req.headers[MESSAGE_TYPE]) {
-  //     // TODO: Do something with the event's data.
-
-  //     console.log(`Event type: ${notification.subscription.type}`);
-  //     console.log(JSON.stringify(notification.event, null, 4));
-
-  //     res.sendStatus(204);
-  //   }
-  //   else if (MESSAGE_TYPE_VERIFICATION === req.headers[MESSAGE_TYPE]) {
-  //     res.status(200).send(notification.challenge);
-  //   }
-  //   else if (MESSAGE_TYPE_REVOCATION === req.headers[MESSAGE_TYPE]) {
-  //     res.sendStatus(204);
-
-  //     console.log(`${notification.subscription.type} notifications revoked!`);
-  //     console.log(`reason: ${notification.subscription.status}`);
-  //     console.log(`condition: ${JSON.stringify(notification.subscription.condition, null, 4)}`);
-  //   }
-  //   else {
-    
-  //     res.sendStatus(204);
-  //     console.log(`Unknown message type: ${req.headers[MESSAGE_TYPE]}`);
-  //   }
-  // }
-  // else {
-  //   console.log('403');    // Signatures didn't match.
-  //   res.sendStatus(403);
-  // }
+app.get("/code", (req, res) => {
+  if (req.query.error || req.query.errors) {
+    res.send("something went wrong")
+  }
+  if (req.query.code) {
+    writeFile(codeFilePath, String(req.query.code), (err) => { })
+    res.send("Saving locally your code:  " + req.query.code)
+  }
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log("Server running on:", `http://localhost:${port}`);
 })
-
-
-function getSecret() {
-  // TODO: Get secret from secure storage. This is the secret you pass 
-  // when you subscribed to the event.
-  return 'bsvqbspm398q5ynuhkslnhjrockfmn';
-}
-
-// Build the message used to get the HMAC.
-function getHmacMessage(request: any) {
-  return (request.headers[TWITCH_MESSAGE_ID] +
-    request.headers[TWITCH_MESSAGE_TIMESTAMP] +
-    request.body);
-}
-
-// Get the HMAC.
-function getHmac(secret: any, message: any) {
-
-  crypto.createHmac("sha256", secret)
-
-  const result = crypto.createHmac('sha256', secret)
-    .update(message)
-    .digest('hex');
-  return result
-}
-
-// Verify whether our hash matches the hash that Twitch passed in the header.
-function verifyMessage(hmac: any, verifySignature: any) {
-  return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(verifySignature));
-}
