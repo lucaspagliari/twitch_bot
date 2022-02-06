@@ -7,17 +7,30 @@ interface MessageParams {
   user: string
   twitch: TwitchPrivateMessage
 }
-interface CommandParams extends MessageParams {
+export interface CommandParams extends MessageParams {
   command: string
   args: string[]
 }
 
 class CommandsController {
-  chat: ChatClient | undefined
+  chat: ChatClient
   commands: Map<string, Function> = new Map()
 
   constructor(chatClient: ChatClient) {
     this.chat = chatClient
+
+    const commands = (chat: ChatClient, params: CommandParams) => {
+      this.showChatCommands(params)
+    }
+    this.add({ commands })
+  }
+
+  log(...args: any[]) {
+    console.log("[Commands]:", ...args);
+  }
+
+  showChatCommands(data: MessageParams) {
+    this.chat.say(data.channel, "Commands available: " + [...this.commands.keys()].join(" | "))
   }
 
   private getCommand(name: string): Function {
@@ -42,29 +55,32 @@ class CommandsController {
     })
   }
 
-
   exec(command: string, data: MessageParams) {
     const arr: string[] = command.split(" ")
     command = arr[0];
-    const args = arr.slice(0, arr.length)
+    const args = arr.slice(1, arr.length)
     const method = this.getCommand(command)
+
+    this.log("exec =>", command, args)
 
     let params: CommandParams = {
       args,
       command,
       ...data
     };
-    method(params)
+
+    method(this.chat, params)
   }
 }
 
 
 
+import random from "./random"
 
 export default function commands(chat: ChatClient) {
   const commands = new CommandsController(chat)
 
-  // commands.addCommandsList(random)
+  commands.add(random)
   // commands.addCommandsList(message)
 
   return commands

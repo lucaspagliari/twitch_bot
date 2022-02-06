@@ -1,6 +1,6 @@
 import express from "express"
 import { config } from "dotenv"
-import { writeFile } from "fs";
+import { readFile, writeFile } from "fs";
 import { join } from "path";
 config()
 
@@ -17,7 +17,7 @@ const redirectUri = `http://localhost:${port}/code`
 const respondeType = "code"
 const scope = "chat:read+chat:edit"
 
-const codeFilePath = join(__dirname, "code.txt")
+const tokensFilePath = join(__dirname, "tokens.json")
 
 
 const link = `${twitchAPI}/authorize`
@@ -42,8 +42,16 @@ app.get("/code", (req, res) => {
     res.send("something went wrong")
   }
   if (req.query.code) {
-    writeFile(codeFilePath, String(req.query.code), (err) => { })
-    res.send("Saving locally your code:  " + req.query.code)
+    readFile(tokensFilePath, (err, data) => {
+      if (err) {
+        res.send("something went wrong")
+        return;
+      }
+      const json = JSON.parse(String(data))
+      json.code = String(req.query.code);;
+      writeFile(tokensFilePath, JSON.stringify(json, null, 4), (err) => { })
+    })
+    res.send("Saving locally your code: " + req.query.code)
   }
 })
 

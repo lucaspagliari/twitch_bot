@@ -1,30 +1,33 @@
-import { Client } from "tmi.js"
-import { params } from "../controllers"
-
+import { ChatClient } from "@twurple/chat/lib"
+import { CommandParams } from ".."
 
 function _dice(): number {
   return Math.floor(Math.random() * 6 + 1)
 }
 
-function dice(client: Client, params: params) {
-  const user = params.context.username || ""
-  client.say(params.target, `@${user} Your Rolled: ${_dice()}`)
+function dice(client: ChatClient, params: CommandParams) {
+  client.say(params.channel, `@${params.user} you rolled: ${_dice()}`)
 }
 
-function guessdice(client: Client, params: params) {
+function guessdice(client: ChatClient, params: CommandParams) {
   if (params.args.length == 0) {
     return
   }
-
   const result = _dice().toString()
+  const userGuess = params.args[0];
+  
+  let msg = ""
+  msg = `Dice Rolled: ${result}. `
+  if (result == userGuess) {
+    msg += "You got it right"
+  } else {
+    msg += "Wrong number.."
+  }
 
-  const msg = `@${params.context.username} guessed ${params.args[0]}. `
-    + `Dice rolled ${result}`
-
-  client.say(params.target, msg)
+  client.say(params.channel, `${msg} @${params.user}`)
 }
 
-function guessage(client: Client, params: params) {
+function guessage(client: ChatClient, params: CommandParams) {
   if (params.args.length == 0) {
     return
   }
@@ -32,10 +35,10 @@ function guessage(client: Client, params: params) {
   const age = Math.abs(new Date(diff).getUTCFullYear() - 1970)
 
   if (params.args[0] == age.toString()) {
-    client.say(params.target, `@${params.context.username} You got it right!!`)
+    client.say(params.channel, `@${params.user} You got it right!!`)
     return
   }
-  client.say(params.target, `Hmmmm wrong answer @${params.context.username}, try again later...`)
+  client.say(params.channel, `Hmmmm wrong answer @${params.user}, try again later...`)
 }
 
 

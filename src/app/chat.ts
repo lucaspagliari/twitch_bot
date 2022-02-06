@@ -33,7 +33,6 @@ export async function getAccessToken() {
     redirect_uri: "http://localhost"
   }
   try {
-
     const response = await axios.post(twitchAPI + "/token", data)
     if (response.status == 200) {
       writeFileSync(jsonFilePath, JSON.stringify(response.data, null, 4))
@@ -41,7 +40,6 @@ export async function getAccessToken() {
   } catch (error) {
     console.error("##### ACCESS TOKEN ERROR #####");
     console.error(error);
-
   }
 }
 
@@ -52,15 +50,19 @@ export function refreshingAuthProvider() {
     {
       clientId,
       clientSecret,
-      onRefresh: async newTokenData => writeFileSync(jsonFilePath, JSON.stringify(newTokenData, null, 4))
+      onRefresh: newTokenData => {
+        const tokenData = JSON.parse(String(readFileSync(jsonFilePath)))
+        newTokenData = Object.assign(tokenData, newTokenData)
+        writeFileSync(jsonFilePath, JSON.stringify(newTokenData, null, 4))
+      }
     },
     tokenData
   )
 }
 
 export function authProvider(): StaticAuthProvider {
-  const tokenData = JSON.parse(String(readFileSync('./tokens.json')))
-  const accessToken = tokenData.accessToken
+  const tokenData = JSON.parse(String(readFileSync(jsonFilePath)))
+  const accessToken = tokenData.access_token
   return new StaticAuthProvider(clientId, accessToken, ['chat:read', 'chat:edit'])
 }
 
